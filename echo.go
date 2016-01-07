@@ -2,6 +2,7 @@ package echo
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/elos/ehttp/serve"
 	"github.com/subosito/twilio"
@@ -38,7 +39,32 @@ func Extract(c *serve.Conn) (*Message, error) {
 	return &Message{To: to, From: from, Body: body}, nil
 }
 
+func parse(s string) (cmd string, bdy string) {
+	firstSpace := strings.Index(s, " ")
+
+	if firstSpace == -1 {
+		return
+	}
+
+	cmd = strings.ToLower(s[0:firstSpace])
+	bdy = s[firstSpace+1 : len(s)-1]
+	return
+}
+
 func Handle(m *Message, t Twilio) {
+	cmd, body := parse(m.Body)
+	switch cmd {
+	case "start":
+		start(m, body, t)
+		return
+	default:
+		break
+	}
 	// just echo
 	t.Send(m.From, m.Body)
+}
+
+func start(m *Message, parseBody string, t Twilio) {
+	t.Send(m.From, fmt.Sprintf("Starting..."))
+	t.Send(m.From, fmt.Sprintf("Started %s", parseBody))
 }
