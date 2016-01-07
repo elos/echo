@@ -47,15 +47,34 @@ func parse(s string) (cmd string, bdy string) {
 	}
 
 	cmd = strings.ToLower(s[0:firstSpace])
-	bdy = s[firstSpace+1 : len(s)-1]
+	bdy = s[firstSpace+1 : len(s)]
 	return
 }
+
+var todos = make(map[string]bool)
+var currentAction = ""
 
 func Handle(m *Message, t Twilio) {
 	cmd, body := parse(m.Body)
 	switch cmd {
 	case "start":
 		start(m, body, t)
+		return
+	case "note":
+		t.Send(m.From, "Noted")
+		return
+	case "todo":
+		todos[body] = true
+		t.Send(m.From, "Added to your list")
+		return
+	case "todos":
+		s := ""
+		i := 1
+		for k := range todos {
+			s += fmt.Sprintf("%d) %s\n", i, k)
+			i++
+		}
+		t.Send(m.From, s)
 		return
 	default:
 		break
@@ -65,6 +84,10 @@ func Handle(m *Message, t Twilio) {
 }
 
 func start(m *Message, parseBody string, t Twilio) {
+	if currentAction != "" {
+		fmt.Sprintf("Stopping %s", currentAction)
+	}
 	t.Send(m.From, fmt.Sprintf("Starting..."))
 	t.Send(m.From, fmt.Sprintf("Started %s", parseBody))
+	currentAction = parseBody
 }
