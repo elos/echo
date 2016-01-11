@@ -43,6 +43,9 @@ func parse(s string) (cmd string, bdy string) {
 	firstSpace := strings.Index(s, " ")
 
 	if firstSpace == -1 {
+		if len(s) > 0 {
+			cmd = s
+		}
 		return
 	}
 
