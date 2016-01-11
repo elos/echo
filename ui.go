@@ -15,13 +15,12 @@ type TextUI struct {
 }
 
 // Constructs a new text ui
-func NewTextUI(in <-chan string, userID string) (*TextUI, <-chan string) {
+func NewTextUI(in <-chan string) (*TextUI, <-chan string) {
 	out := make(chan string)
 
 	ui := &TextUI{
 		in:  in,
 		out: out,
-		uid: userID,
 	}
 
 	return ui, out
